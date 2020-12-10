@@ -1,6 +1,7 @@
 const express = require("express");
 const { animals } = require("./data/animals");
 //instantiated the server - allows us to chain chain methods to the Express.js server
+const PORT = process.env.PORT || 3001;
 const app = express();
 
 //this func will take in req.query as an argument and filter through the animals returning new filtered array
@@ -57,6 +58,6 @@ app.get("/api/animals", (req, res) => {
 });
 
 //app.listen() returns an http.Server object
-app.listen(3001, () => {
-  console.log(`API server now on port 3001!`); //port gives exact destination to host like a building on a campus
+app.listen(PORT, () => {
+  console.log(`API server now on port ${PORT}!`);
 });
