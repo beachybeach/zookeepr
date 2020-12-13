@@ -5,7 +5,7 @@ const { animals } = require("./data/animals");
 //instantiated the server - allows us to chain chain methods to the Express.js server
 const PORT = process.env.PORT || 3001;
 const app = express();
-
+app.use(express.static("public"));
 //parse incoming string to array data
 app.use(express.urlencoded({ extended: true }));
 // parse incoming JSON data
@@ -120,6 +120,10 @@ app.post("/api/animals", (req, res) => {
 
     res.json(animal);
   }
+});
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "./public/index.html"));
 });
 
 //app.listen() returns an http.Server object
