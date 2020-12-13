@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const express = require("express");
 const { animals } = require("./data/animals");
 //instantiated the server - allows us to chain chain methods to the Express.js server
@@ -66,6 +68,16 @@ function findById(id, animalsArray) {
   const result = animalsArray.filter((animal) => animal.id === id)[0];
   return result;
 }
+function createNewAnimal(body, animalsArray) {
+  const animal = body;
+  animalsArray.push(animal);
+  fs.writeFileSync(
+    path.join(__dirname, "./data/animals.json"),
+    JSON.stringify({ animals: animalsArray }, null, 2)
+  );
+
+  return animal;
+}
 
 app.get("/api/animals/:id", (req, res) => {
   const result = findById(req.params.id, animals);
@@ -77,9 +89,13 @@ app.get("/api/animals/:id", (req, res) => {
 });
 
 app.post("/api/animals", (req, res) => {
-  //req.body is where our incoming content will be
-  console.log(req.body);
-  res.json(req.body);
+  //set id based on what the next index of the array will be
+  req.body.id = animals.length.toString();
+
+  // add animal to json file and animals array in this function
+  const animal = createNewAnimal(req.body, animals);
+
+  res.json(animal);
 });
 
 //app.listen() returns an http.Server object
