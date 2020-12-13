@@ -4,6 +4,11 @@ const { animals } = require("./data/animals");
 const PORT = process.env.PORT || 3001;
 const app = express();
 
+//parse incoming string to array data
+app.use(express.urlencoded({ extended: true }));
+// parse incoming JSON data
+app.use(express.json());
+
 //this func will take in req.query as an argument and filter through the animals returning new filtered array
 function filterByQuery(query, animalsArray) {
   let personalityTraitsArray = [];
