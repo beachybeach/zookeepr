@@ -1,3 +1,5 @@
+const apiRoutes = require("./routes/apiRoutes");
+const htmlRoutes = require("./routes/htmlRoutes");
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
@@ -11,128 +13,8 @@ app.use(express.urlencoded({ extended: true }));
 // parse incoming JSON data
 app.use(express.json());
 
-//this func will take in req.query as an argument and filter through the animals returning new filtered array
-function filterByQuery(query, animalsArray) {
-  let personalityTraitsArray = [];
-  //Note that we save the animalsArray as filteredResults here:
-  let filteredResults = animalsArray;
-  if (query.personalityTraits) {
-    //save personalityTraits as a dedicated array.
-    // If personalityTraits is a string, place it into a new array and save.
-    if (typeof query.personalityTraits === "string") {
-      personalityTraitsArray = [query.personalityTraits];
-    } else {
-      personalityTraitsArray = query.personalityTraits;
-    }
-    //loop through each trait in the personalityTraits array:
-    personalityTraitsArray.forEach((trait) => {
-      //check the trait agains each animal in the filteredResults array.
-      //Remember, it is initially a copy of the animalsArray but here were updating it for each train the .forEach() loop
-      //for each trait being targeted by the filter, the filteredResults array will then contain only the entries that contain the trait,
-      //so at the end we'll have an array of animals that have every one of the traits when the foreach is finished
-      filteredResults = filteredResults.filter(
-        (animal) => animal.personalityTraits.indexOf(trait) !== -1
-      );
-    });
-  }
-  if (query.diet) {
-    filteredResults = filteredResults.filter(
-      (animal) => animal.diet === query.diet
-    );
-  }
-  if (query.species) {
-    filteredResults = filteredResults.filter(
-      (animal) => animal.species === query.species
-    );
-  }
-  if (query.name) {
-    filteredResults = filteredResults.filter(
-      (animal) => animal.name === query.name
-    );
-  }
-  return filteredResults;
-}
-
-//get takes two arguments (1)a string that describes the route the client will have to fetch from
-//(2) is a callback function that will execute every time that route is accessed with a GET request
-app.get("/api/animals", (req, res) => {
-  //we are using send() from res(response) parameter to send string Hello! to client
-  let results = animals;
-  if (req.query) {
-    results = filterByQuery(req.query, results);
-  }
-  res.json(results); //using json returns json format
-});
-
-function findById(id, animalsArray) {
-  const result = animalsArray.filter((animal) => animal.id === id)[0];
-  return result;
-}
-function createNewAnimal(body, animalsArray) {
-  const animal = body;
-  animalsArray.push(animal);
-  fs.writeFileSync(
-    path.join(__dirname, "./data/animals.json"),
-    JSON.stringify({ animals: animalsArray }, null, 2)
-  );
-
-  return animal;
-}
-
-function validateAnimal(animal) {
-  if (!animal.name || typeof animal.name !== "string") {
-    return false;
-  }
-  if (!animal.species || typeof animal.species !== "string") {
-    return false;
-  }
-  if (!animal.diet || typeof animal.diet !== "string") {
-    return false;
-  }
-  if (
-    !animal.personalityTraits ||
-    typeof animal.personalityTraits !== "string"
-  ) {
-    return false;
-  }
-  return true;
-}
-
-app.get("/api/animals/:id", (req, res) => {
-  const result = findById(req.params.id, animals);
-  if (result) {
-    res.json(result);
-  } else {
-    res.send(404);
-  }
-});
-
-app.post("/api/animals", (req, res) => {
-  //set id based on what the next index of the array will be
-  req.body.id = animals.length.toString();
-
-  // add animal to json file and animals array in this function
-  //if any data in req.body is incorrect, send 400 error back
-  if (!validateAnimal(req.body)) {
-    res.status(400).send("The animal is not properly fomratted.");
-  } else {
-    const animal = createNewAnimal(req.body, animals);
-
-    res.json(animal);
-  }
-});
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "./public/index.html"));
-});
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "./public/animals.html"));
-});
-
-app.get("/zookeepers", (req, res) => {
-  res.sendFile(path.join(__dirname, "./public/zookeepers.html"));
-});
+app.use("/api", apiRoutes);
+app.use("/", htmlRoutes);
 
 //app.listen() returns an http.Server object
 app.listen(PORT, () => {
