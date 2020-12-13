@@ -1,8 +1,15 @@
+const fs = require("fs");
+const path = require("path");
 const express = require("express");
 const { animals } = require("./data/animals");
 //instantiated the server - allows us to chain chain methods to the Express.js server
 const PORT = process.env.PORT || 3001;
 const app = express();
+
+//parse incoming string to array data
+app.use(express.urlencoded({ extended: true }));
+// parse incoming JSON data
+app.use(express.json());
 
 //this func will take in req.query as an argument and filter through the animals returning new filtered array
 function filterByQuery(query, animalsArray) {
@@ -61,6 +68,16 @@ function findById(id, animalsArray) {
   const result = animalsArray.filter((animal) => animal.id === id)[0];
   return result;
 }
+function createNewAnimal(body, animalsArray) {
+  const animal = body;
+  animalsArray.push(animal);
+  fs.writeFileSync(
+    path.join(__dirname, "./data/animals.json"),
+    JSON.stringify({ animals: animalsArray }, null, 2)
+  );
+
+  return animal;
+}
 
 app.get("/api/animals/:id", (req, res) => {
   const result = findById(req.params.id, animals);
@@ -69,6 +86,16 @@ app.get("/api/animals/:id", (req, res) => {
   } else {
     res.send(404);
   }
+});
+
+app.post("/api/animals", (req, res) => {
+  //set id based on what the next index of the array will be
+  req.body.id = animals.length.toString();
+
+  // add animal to json file and animals array in this function
+  const animal = createNewAnimal(req.body, animals);
+
+  res.json(animal);
 });
 
 //app.listen() returns an http.Server object
